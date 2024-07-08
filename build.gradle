@@ -1,0 +1,57 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.1'
+	id 'io.spring.dependency-management' version '1.1.5'
+	id 'com.palantir.docker' version '0.35.0'
+}
+
+group = 'ns.project'
+version = '1.0.0'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//json
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+	//thymleaf
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	//Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	//jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+docker {
+	println(tasks.bootJar.outputs.files)
+	name project.name+":"+version
+	dockerfile file('./Dockerfile')
+	files tasks.bootJar.outputs.files
+	buildArgs(['JAR_FILE':tasks.bootJar.outputs.files.singleFile.name])
+}

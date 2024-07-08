@@ -1,0 +1,31 @@
+version: '3'
+services:
+
+  redis:
+    image: redis:6.2
+    networks:
+      - presentation_network
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=8304
+
+
+  presentation:
+    image: presentation:1.0.0
+    networks:
+      - presentation_network
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_PASSWORD=
+
+networks:
+  presentation_network:
+    driver: bridge
+
