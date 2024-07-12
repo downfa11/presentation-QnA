@@ -85,11 +85,14 @@ public class batchService {
                 String[] commentKeyParts = commentKey.split(":");
                 String commentId = commentKeyParts[2];
                 String commentUserId = commentKeyParts[3];
-                String contents = redisTemplate.opsForValue().get(commentKey);
+
+                String[] contentsInfo = redisTemplate.opsForValue().get(commentKey).split(":");
+                String contents = contentsInfo[0];
+                String contentsCreatedAt = contentsInfo[2];
 
                 Long likesCount = slidoService.getLikesCount(roomKey, commentId);
 
-                CommentDto commentDto = new CommentDto(commentId, commentUserId, contents, likesCount);
+                CommentDto commentDto = new CommentDto(commentId, commentUserId, contents,contentsCreatedAt, likesCount);
                 commentDtos.add(commentDto);
             }
 

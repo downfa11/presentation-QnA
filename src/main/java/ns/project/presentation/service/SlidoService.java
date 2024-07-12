@@ -94,7 +94,7 @@ public class SlidoService {
         LocalDateTime current = LocalDateTime.now();
         String timestamp = current.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-        redisTemplate.opsForValue().set(key, contents+"timestamp:"+timestamp,defaultTime, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, contents+":timestamp:"+timestamp,defaultTime, TimeUnit.MINUTES);
        System.out.println("Comment registered with key: " + key);
     }
 
@@ -121,7 +121,7 @@ public class SlidoService {
                 LocalDateTime current = LocalDateTime.now();
                 String timestamp = current.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-                redisTemplate.opsForValue().set(key, contents+"timestamp:"+timestamp,defaultTime, TimeUnit.MINUTES);
+                redisTemplate.opsForValue().set(key, contents+":timestamp:"+timestamp,defaultTime, TimeUnit.MINUTES);
                 System.out.println("Comment modified with key: " + key);
                 return;
             }
@@ -224,13 +224,17 @@ public class SlidoService {
         List<CommentDto> commentDtos = new ArrayList<>();
         for (String commentKey : commentKeys) {
             String[] commentKeyParts = commentKey.split(":");
-            String commentId = commentKeyParts[2];
-            String commentUserId = commentKeyParts[3];
-            String contents = redisTemplate.opsForValue().get(commentKey);
+
+            String commentId = commentKeyParts[commentKeyParts.length - 2];
+            String commentUserId = commentKeyParts[commentKeyParts.length - 1];
+
+            String[] contentsInfo = redisTemplate.opsForValue().get(commentKey).split(":");
+            String contents = contentsInfo[0];
+            String contentsCreatedAt = contentsInfo[2];
 
             Long likesCount = getLikesCount(roomKey, commentId);
 
-            CommentDto commentDto = new CommentDto(commentId, commentUserId, contents, likesCount);
+            CommentDto commentDto = new CommentDto(commentId, commentUserId, contents,contentsCreatedAt, likesCount);
             commentDtos.add(commentDto);
         }
 

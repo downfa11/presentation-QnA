@@ -31,7 +31,8 @@ public class jwtTokenProvider {
     public String getMembershipIdbyToken() {
         String accessToken = getJwtToken();
         if (accessToken == null || accessToken.length() == 0) {
-            throw new RuntimeException("JwtToken is Invalid.");
+            System.out.println("JwtToken is Invalid.");
+            return "";
         }
 
         String token = accessToken.replace("Bearer ", "");
