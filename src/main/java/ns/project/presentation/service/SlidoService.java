@@ -179,7 +179,7 @@ public class SlidoService {
 
 
         Long likesCount = getLikesCount(roomId, commentId);
-        System.out.println("Updated likes count: " + likesCount);
+        System.out.println("Updated likes count: " + likesCount+" - "+roomId+", commentId:"+commentId);
         return likesCount;
     }
 
@@ -232,8 +232,7 @@ public class SlidoService {
             String contents = contentsInfo[0];
             String contentsCreatedAt = contentsInfo[2];
 
-            Long likesCount = getLikesCount(roomKey, commentId);
-
+            Long likesCount = getLikesCount(roomId, commentId);
             CommentDto commentDto = new CommentDto(commentId, commentUserId, contents,contentsCreatedAt, likesCount);
             commentDtos.add(commentDto);
         }
@@ -246,7 +245,7 @@ public class SlidoService {
             System.out.println("JSON parsing error: " + e);
             return "Json parsing error: "+e;
         }
-        System.out.println("list : "+result);
+        // System.out.println("list : "+result);
         return result;
     }
 
