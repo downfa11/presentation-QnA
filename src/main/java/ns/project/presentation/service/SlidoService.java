@@ -111,7 +111,7 @@ public class SlidoService {
         Set<String> keys = redisTemplate.keys(commentKeyPattern);
 
         if (keys == null || keys.isEmpty()) {
-            System.out.println("Comment not found for commentId: " + roomId);
+            System.out.println("Comment not found for roomId: " + roomId+", commentId: "+commentId);
             return;
         }
 
@@ -125,9 +125,8 @@ public class SlidoService {
                 System.out.println("Comment modified with key: " + key);
                 return;
             }
+            else System.out.println("User is not authorized to modify this comment id:"+userId+", roomId:"+roomId);
         }
-
-        System.out.println("User is not authorized to modify this comment id:"+userId+", roomId:"+roomId);
     }
 
     @Transactional
@@ -147,7 +146,7 @@ public class SlidoService {
 
         for (String key : keys) {
             String storedUserId = getUserIdFromCommentKey(key);
-            if (userId.equals(storedUserId)) {
+            if (userId.equals(storedUserId) || userId.equals(roomId)) {
                 String likesKey = String.format(LIKES_KEY_PATTERN, roomKey, commentId);
                 if (redisTemplate.hasKey(likesKey)) {
                     redisTemplate.delete(likesKey);
@@ -158,6 +157,7 @@ public class SlidoService {
                 System.out.println("Comment deleted with key: " + key);
                 return;
             }
+            else System.out.println("Not Authication JWT token.");
         }
 
     }

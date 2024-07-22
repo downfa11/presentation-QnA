@@ -1,8 +1,56 @@
 document.addEventListener("DOMContentLoaded", function () {
     let sortCriterion = "date";
     let sortOrder = "desc";
-    let roomId="room";
-    let userId="user1";
+    const userId = sessionStorage.getItem('userId');
+
+    fetch('/api/user-info')
+        .then(response => response.json())
+        .then(data => {
+            sessionStorage.setItem('nickname', data.nickname);
+            sessionStorage.setItem('thumbnailImage', data.thumbnailImage);
+            sessionStorage.setItem('jwtToken', data.jwtToken);
+
+            const nickname = sessionStorage.getItem('nickname');
+            const thumbnailImage = sessionStorage.getItem('thumbnailImage');
+            const jwtToken = sessionStorage.getItem('jwtToken');
+
+            const profileImg = document.querySelector('.profile img');
+            const defaultProfile = document.querySelector('.default-profile');
+
+
+            if (jwtToken!="null" || !sessionStorage.getItem(userId)) {
+
+                console.log("User is logged in. "+nickname +" (userId:"+userId+")");
+
+                if (profileImg && thumbnailImage) {
+                    profileImg.src = thumbnailImage;
+                    profileImg.style.display = 'block';
+                    defaultProfile.style.display = 'none';
+                } else {
+                    profileImg.style.display = 'none';
+                    defaultProfile.style.display = 'block';
+                }
+
+                const nicknameSpan = document.querySelector('.content-data p span');
+                if (nicknameSpan) {
+                    nicknameSpan.textContent = userId;
+                }
+            }
+            else {
+                console.warn("User is not logged in.");
+                window.location.href = '/';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user info:', error);
+        });
+
+    const url = window.location.href;
+    const lastSegment = url.substring(url.lastIndexOf('/') + 1);
+
+    let roomId = lastSegment;
+    const roomNameSpan = document.getElementById("room-name");
+    roomNameSpan.textContent = roomId;
 
     const menuToggle = document.querySelectorAll(".menu");
 
@@ -20,7 +68,17 @@ document.addEventListener("DOMContentLoaded", function () {
         content.classList.toggle("active");
     });
 
-    document.getElementById('qr-button').addEventListener('click', async function () {
+    function scrollToBottom() {
+        const chatBox = document.querySelector('.chat-box');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.addEventListener('DOMContentLoaded', scrollToBottom);
+
+    const qrButton = document.getElementById('qr-button');
+    const qrCodeContainer = document.getElementById('qr-code-container');
+
+    async function generateQRCode() {
         try {
             const response = await fetch(`/qrcode/${roomId}`, {
                 method: 'GET',
@@ -34,12 +92,62 @@ document.addEventListener("DOMContentLoaded", function () {
                 const url = URL.createObjectURL(blob);
 
                 const qrCodeContainer = document.getElementById('qr-code-container');
-                qrCodeContainer.innerHTML = `<img src="${url}" alt="QR Code">`;
+                qrCodeContainer.innerHTML = `
+                <img id="qr-code-img" src="${url}" alt="QR Code">
+                <div id="qr-buttons">
+                    <button id="qr-size-small">작게</button>
+                    <button id="qr-size-medium">보통</button>
+                    <button id="qr-size-large">크게</button>
+                </div>
+            `;
+                qrCodeContainer.style.display = 'block';
+
+                document.getElementById('qr-size-small').addEventListener('click', () => {
+                    setQRCodeSize('small');
+                });
+                document.getElementById('qr-size-medium').addEventListener('click', () => {
+                    setQRCodeSize('medium');
+                });
+                document.getElementById('qr-size-large').addEventListener('click', () => {
+                    setQRCodeSize('large');
+                });
             } else {
                 console.error('Failed to generate QR code:', response.statusText);
             }
         } catch (error) {
             console.error('Error generating QR code:', error);
+        }
+    }
+
+    function setQRCodeSize(size) {
+        const img = document.getElementById('qr-code-img');
+
+        switch (size) {
+            case 'small':
+                img.style.width = '100px';
+                break;
+            case 'medium':
+                img.style.width = '300px';
+                break;
+            case 'large':
+                img.style.width = '500px';
+                break;
+            default:
+                img.style.width = '200px';
+                break;
+        }
+    }
+
+    function hideQRCode() {
+        qrCodeContainer.innerHTML = '';
+        qrCodeContainer.style.display = 'none';
+    }
+
+    qrButton.addEventListener('click', () => {
+        if (qrCodeContainer.style.display === 'block') {
+            hideQRCode();
+        } else {
+            generateQRCode();
         }
     });
 
@@ -70,11 +178,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    document.querySelectorAll('.breadcrumbs a').forEach(link => {
+    document.querySelectorAll('.sort-pagination a').forEach(link => {
         link.addEventListener('click', function(event) {
             event.preventDefault();
             sortCriterion = this.dataset.sort;
             sortOrder = this.dataset.order;
+
+            console.log(this.dataset);
             fetchData(sortCriterion, sortOrder);
         });
     });
@@ -161,26 +271,76 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    async function checkRoomExistence(roomId) {
+        try {
+            const response = await fetch(`/find/rooms/${roomId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // , 'Authorization': `Bearer ${jwtToken}`
+                }
+            });
+
+            if (response.ok) {
+                sessionStorage.setItem('roomId', roomId);
+                window.location.href = `/rooms/${roomId}`;
+            } else if (response.status === 404) {
+                alert(`Room '${roomId}' does not exist.`);
+            } else {
+                throw new Error('Failed to fetch room. Check again Auth.');
+            }
+
+        } catch (error) {
+            alert('Error checking room existence: ' + error.message);
+        }
+    }
+
+    const searchIcon = document.getElementById('search-icon');
+    searchIcon.addEventListener('click', function() {
+        performSearch();
+    });
+
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    function performSearch() {
+        const roomId = searchInput.value.trim();
+        if (roomId) {
+            checkRoomExistence(roomId);
+        } else {
+            alert('검색어를 입력하세요.');
+        }
+    }
+
+
     function displayMessages(comments) {
         const chatBox = document.querySelector('.chat-box');
-        const userId = "user1";
         chatBox.innerHTML = '';
 
         comments.forEach(comment => {
             const msgClass = comment.userId === userId ? 'msg me' : 'msg';
             const html = `
-            <div class="${msgClass}" data-date="${comment.date}" data-likes="${comment.likesCount}" data-commentId="${comment.commentId}">
+            <div class="${msgClass}" data-date="${comment.date}" data-likesCount="${comment.likesCount}" data-commentId="${comment.commentId}">
                 <div class="chat">
                     <div class="profile">
                         <span class="username">${comment.userId}</span>
                         <span class="time">${formatTimestamp(comment.date)}</span>
                     </div>
                     <p>${comment.contents}</p>
-                    <button class="like-button">👍🏻 ${comment.likesCount}</button>
+                    <div class="buttons"> 
+                        <button class="like-button">💓 ${comment.likesCount} </button>
                                 ${comment.userId === userId ? `
                                     <button class="edit-button">수정</button>
                                     <button class="delete-button">삭제</button>
                                 ` : ''}
+                                
+                                ${userId === roomId ? `
+                                    <button class="done-button">완료</button> `: ''}
+                    </div>
                 </div>
             </div>
         `;
@@ -196,6 +356,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', handleDelete);
+        });
+
+        document.querySelectorAll('.done-button').forEach(button => {
             button.addEventListener('click', handleDelete);
         });
     }
@@ -227,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ contents: message, userId: "user" })
+                body: JSON.stringify({ contents: message, userId: userId })
             });
 
             if (response.ok) {
@@ -247,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error('Error in pollData:', error);
         } finally {
-            setTimeout(pollData, 3000);
+            setTimeout(pollData, 1500);
         }
     }
 

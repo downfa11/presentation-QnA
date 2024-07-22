@@ -46,6 +46,15 @@ dependencies {
 	//zxing
 	implementation 'com.google.zxing:core:3.4.1'
 	implementation 'com.google.zxing:javase:3.4.1'
+
+	// opensearch
+	implementation 'org.opensearch.client:opensearch-java:2.11.1'
+
+	// httpclient5
+	implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+
+	// apache common
+	implementation 'org.apache.commons:commons-lang3:3.11'
 }
 
 tasks.named('test') {

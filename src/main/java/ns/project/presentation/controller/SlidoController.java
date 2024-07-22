@@ -33,6 +33,8 @@ public class SlidoController {
 
     @GetMapping("/find/rooms/{roomId}")
     public ResponseEntity<String> findCurrentRoom(@PathVariable String roomId) {
+        // token 검사 필요
+
         String currentRoom = slidoService.findCurrentRoom(roomId);
         if (currentRoom == null) {
             return ResponseEntity.notFound().build();

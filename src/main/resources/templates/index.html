@@ -14,12 +14,11 @@
     <!-- NAVBAR -->
     <nav>
         <span class="material-symbols-outlined" data-icon="menu">menu</span>
-        <form action="#">
             <div class="form-group">
-                <input type="text" placeholder="Search...">
-                <span class="material-symbols-outlined" data-icon="search">search</span>
+                <input type="text" id="search-input" placeholder="Search...">
+                <span class="material-symbols-outlined" id="search-icon" data-icon="search">search</span>
             </div>
-        </form>
+
 
         <a href="#" class="nav-link">
             <span class="material-symbols-outlined">notifications</span>
@@ -33,7 +32,8 @@
 
         <span class="divider"></span>
         <div class="profile">
-            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cGVvcGxlfGVufDB8fDB8fHww" alt="">
+            <img src="" alt="Profile Image" class="profile-img">
+            <div class="default-profile"></div>
             <ul class="profile-link">
                 <li><a href="#"><span class="material-symbols-outlined">account_circle</span>Profile</a></li>
                 <li><a href="#"><span class="material-symbols-outlined">settings</span>Settings</a></li>
@@ -47,44 +47,54 @@
     <main>
         <h1 class="title">Slido ToyProject</h1>
         <ul class="breadcrumbs">
-            <li><a href="#">Home</a></li>
+            <li><a href="/">Home</a></li>
             <li class="divider">/</li>
             <li><a href="#" class="active">Slido</a></li>
         </ul>
-        <div class="info-data">
-        </div>
 
         <div class="data">
-            <div class="content-data">
+            <div class="content-data left">
                 <div class="head">
-                    <h3>Chatbox</h3>
+                    <h3>Presentation QnA</h3>
                     <div class="menu">
                     </div>
                 </div>
 
-                <ul class="breadcrumbs">
+                <div>현재 방 이름 : <span id="room-name"> </span> </div>
+                <p>환영합니다 <span th:text="${nickname}"></span> 님</p>
+
+                <ul class="sort-pagination">
                     <li><a href="#" data-sort="date" data-order="desc">최신순</a></li>
                     <li class="divider">/</li>
                     <li><a href="#" data-sort="date" data-order="asc">역순</a></li>
                     <li class="divider">/</li>
-                    <li><a href="#" data-sort="likes" data-order="desc">좋아요 많은 순</a></li>
+                    <li><a href="#" data-sort="likesCount" data-order="asc">좋아요 많은 순</a></li>
                     <li class="divider">/</li>
-                    <li><a href="#" data-sort="likes" data-order="asc">좋아요 적은 순</a></li>
+                    <li><a href="#" data-sort="likesCount" data-order="desc">좋아요 적은 순</a></li>
                 </ul>
 
                 <div class="chat-box" id="comments">
                     <p class="day"><span>Today</span></p>
+
                 </div>
 
                 <form action="#" class="chatbox-message">
                     <textarea name="message" id="message-input" placeholder="Type message..."></textarea>
                     <button type="submit"><span class="material-symbols-outlined" data-icon="send">send</span></button>
                 </form>
+
             </div>
+            <div class="content-data right">
+            <div class="submenu">
+                <div class="text">
+                    <p>Join to Slido.Project</p>
+                </div>
         </div>
 
-        <button id="qr-button">QR 코드 생성</button>
+        <button id="qr-button">QR code Generate</button>
         <div id="qr-code-container"></div>
+        </div>
+        </div>
     </main>
     <!-- MAIN -->
 </section>

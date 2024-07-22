@@ -1,82 +1,79 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        textarea {
-            resize: vertical;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="/style.css">
+    <title>Presentation QnA Form</title>
 </head>
 <body>
-<div class="container">
-    <h1>침해사고보고서</h1>
-    <form>
-        <label for="incident-date">침해사고 발생일시:</label>
-        <input type="datetime-local" id="incident-date" name="incident-date" required>
 
-        <label for="reporter">보고자: </label>
-        <input type="text" id="reporter" name="reporter" required>
+<!-- NAVBAR -->
+<section id="content">
+    <!-- NAVBAR -->
+    <nav>
+        <span class="material-symbols-outlined" data-icon="menu">menu</span>
+        <div class="form-group">
+            <input type="text" id="search-input" placeholder="Search...">
+            <span class="material-symbols-outlined" id="search-icon" data-icon="search">search</span>
+        </div>
 
-        <label for="report-date">보고일시:</label>
-        <input type="datetime-local" id="report-date" name="report-date" required>
 
-        <label for="incident-details">사고내용 (발견사항, 피해내용 등):</label>
-        <textarea id="incident-details" name="incident-details" rows="5" required></textarea>
+        <a href="#" class="nav-link">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="badge">0</span>
+        </a>
 
-        <label for="response-details">사고대응 경과 내용:</label>
-        <textarea id="response-details" name="response-details" rows="5" required></textarea>
+        <a href="#" class="nav-link">
+            <span class="material-symbols-outlined">sms</span>
+            <span class="badge">1</span>
+        </a>
 
-        <label for="response-time">사고대응까지의 소요시간:</label>
-        <input type="text" id="response-time" name="response-time" required>
+        <span class="divider"></span>
+        <div class="profile">
+            <img src="" alt="Profile Image" class="profile-img">
+            <div class="default-profile"></div>
 
-        <button type="submit">저장</button>
-    </form>
-</div>
+            <ul class="profile-link">
+                <li><a href="#"><span class="material-symbols-outlined">account_circle</span>Profile</a></li>
+                <li><a href="#"><span class="material-symbols-outlined">settings</span>Settings</a></li>
+                <li><a href="#"><span class="material-symbols-outlined">logout</span>Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <!-- NAVBAR -->
+
+    <!-- MAIN -->
+    <main>
+        <h1 class="title">Slido ToyProject</h1>
+        <ul class="breadcrumbs">
+            <li><a href="/" class="active">Home</a></li>
+            <li class="divider">/</li>
+            <li><a href="#" >Slido</a></li>
+        </ul>
+        <div class="info-data">
+        </div>
+
+        <div class="data">
+            <div class="content-data">
+                <div>hi here is login page.</div>
+                <div class="user-info">
+                    <p>환영합니다 <span class="nickname"></span> 님</p>
+                    <button id="create-room-button" class="hidden">방만들기</button>
+                    <button id="join-room-button" class="hidden">접속하기</button>
+                </div>
+                <div class="login-info">
+                    <p><a th:href="@{|${kakaoUrl}|}" id="kakao-login">카카오로그인</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- MAIN -->
+</section>
+<!-- NAVBAR -->
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/login.js"></script>
 </body>
 </html>

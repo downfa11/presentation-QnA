@@ -36,12 +36,15 @@ li {
     list-style: none;
 }
 
+.hidden {
+    display: none;
+}
+
 
 /* CONTENT */
 #content {
     position: relative;
-    width: calc(100%);
-    /*left: 260px;*/
+    width: 100%;
     transition: all .3s ease;
 }
 
@@ -57,7 +60,7 @@ nav {
     padding: 0 20px;
     display: flex;
     align-items: center;
-    grid-gap: 28px;
+    gap: 28px;
     position: sticky;
     top: 0;
     left: 0;
@@ -70,14 +73,19 @@ nav .material-symbols-outlined[data-icon="menu"] {
 }
 
 nav form {
-    max-width: 400px;
+    max-width: 100%;
     width: 100%;
     margin-right: auto;
 }
 
 nav .form-group {
     position: relative;
+    flex-grow: 2;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
 }
+
 nav .form-group input {
     width: 100%;
     background: var(--gray);
@@ -87,24 +95,28 @@ nav .form-group input {
     padding: 10px 36px 10px 16px;
     transition: all .3s ease;
 }
+
 nav .form-group input:focus {
     box-shadow: 0 0 0 1px var(--blue), 0 0 0 4px var(--light-blue);
 }
+
 nav .form-group .material-symbols-outlined[data-icon="search"] {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     right: 16px;
+    transform: translateY(-50%);
     color: var(--dark-gray);
 }
 
 nav .nav-link {
     position: relative;
 }
+
 nav .nav-link .material-symbols-outlined {
     font-size: 18px;
     color: var(--dark);
 }
+
 nav .nav-link .badge {
     position: absolute;
     top: -12px;
@@ -116,6 +128,7 @@ nav .nav-link .badge {
     background: var(--red);
     display: flex;
     justify-content: center;
+    align-items: center;
     color: var(--light);
     font-size: 10px;
     font-weight: 700;
@@ -125,12 +138,12 @@ nav .divider {
     width: 1px;
     background: var(--gray);
     height: 12px;
-    display: block;
 }
 
 nav .profile {
     position: relative;
 }
+
 nav .profile img {
     width: 36px;
     height: 36px;
@@ -138,43 +151,57 @@ nav .profile img {
     object-fit: cover;
     cursor: pointer;
 }
+
+.default-profile {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    background-color: gray;
+
+
+}
+
 nav .profile .profile-link {
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
     background: var(--light);
     padding: 10px 0;
-    box-shadow: 4px 4px 16px rgba(0, 0, 0, 1);
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     width: 160px;
     opacity: 0;
     pointer-events: none;
     transition: all .3s ease;
 }
+
 nav .profile .profile-link.show {
     opacity: 1;
     pointer-events: visible;
     top: 100%;
 }
+
 nav .profile .profile-link a {
     padding: 10px 16px;
     display: flex;
-    grid-gap: 10px;
+    gap: 10px;
     font-size: 14px;
     color: var(--dark);
     align-items: center;
     transition: all .3s ease;
 }
+
 nav .profile .profile-link a:hover {
     background: var(--gray);
 }
 /* NAVBAR */
 
-
 /* MAIN */
 main {
     width: 100%;
-    padding: 24px 20px 20px 20px;
+    padding: 24px 20px 20px;
 }
 
 main .title {
@@ -185,17 +212,40 @@ main .title {
 
 main .breadcrumbs {
     display: flex;
-    grid-gap: 6px;
+    gap: 6px;
 }
+
 main .breadcrumbs li,
 main .breadcrumbs li a {
     font-size: 14px;
 }
+
 main .breadcrumbs li a {
     color: var(--blue);
 }
+
 main .breadcrumbs li a.active,
 main .breadcrumbs li a.divider {
+    color: var(--dark-gray);
+    pointer-events: none;
+}
+
+main .sort-pagination {
+    display: flex;
+    gap: 6px;
+}
+
+main .sort-pagination li,
+main .sort-pagination li a {
+    font-size: 14px;
+}
+
+main .sort-pagination li a {
+    color: var(--blue);
+}
+
+main .sort-pagination li a.active,
+main .sort-pagination li a.divider {
     color: var(--dark-gray);
     pointer-events: none;
 }
@@ -204,74 +254,30 @@ main .info-data {
     margin-top: 36px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    grid-gap: 20px;
+    gap: 20px;
 }
+
 main .info-data .card {
     padding: 20px;
     border-radius: 10px;
     background: var(--light);
-    box-shadow: 4px 4px 16px rgba(0, 0, 0, .05);
-}
-
-main .card .head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-main .card .head h2 {
-    font-size: 24px;
-    font-weight: 600;
-}
-main .card .head p {
-    font-size: 14px;
-}
-main .card .head .material-symbols-outlined[data-icon="trending_up"] {
-    font-size: 20px;
-    color: var(--red);
-}
-main .card .head .material-symbols-outlined[data-icon="trending_down"] {
-    font-size: 20px;
-    color: var(--blue);
-}
-
-main .card .progress {
-    display: block;
-    margin-top: 24px;
-    height: 10px;
-    width: 100%;
-    border-radius: 10px;
-    background: var(--gray);
-    overflow-y: hidden;
-    position: relative;
-    margin-bottom: 4px;
-}
-main .card .progress::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: var(--blue);
-    width: var(--value);
-}
-main .card .label {
-    font-size: 14px;
-    font-weight: 700;
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 main .data {
-    display: flex;
-    grid-gap: 20px;
+    display: grid;
+    grid-template-columns: 5fr 1fr;
+    gap: 20px;
     margin-top: 20px;
-    flex-wrap: wrap;
 }
+
 main .data .content-data {
     flex-grow: 1;
     flex-basis: 400px;
     padding: 20px;
     background: var(--light);
     border-radius: 10px;
-    box-shadow: 4px 4px 16px rgba(0, 0, 0, .1);
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 main .content-data .head {
@@ -280,16 +286,19 @@ main .content-data .head {
     align-items: center;
     margin-bottom: 24px;
 }
+
 main .content-data .head h3 {
     font-size: 20px;
     font-weight: 600;
 }
+
 main .content-data .head .menu {
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 main .content-data .head .menu .material-symbols-outlined[data-icon="more_horiz"] {
     cursor: pointer;
 }
@@ -301,18 +310,20 @@ main .content-data .head .menu-link {
     width: 140px;
     background: var(--light);
     border-radius: 10px;
-    box-shadow: 4px 4px 16px rgba(0, 0, 0, .1);
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.1);
     padding: 10px 0;
     z-index: 100;
     opacity: 0;
     pointer-events: none;
     transition: all .3s ease;
 }
+
 main .content-data .head .menu-link.show {
     top: 100%;
     opacity: 1;
     pointer-events: visible;
 }
+
 main .content-data .head .menu-link a {
     display: block;
     padding: 6px 16px;
@@ -320,134 +331,143 @@ main .content-data .head .menu-link a {
     color: var(--dark);
     transition: all .3s ease;
 }
+
 main .content-data .head .menu-link a:hover {
     background: var(--gray);
-}
-
-main .content-data .chart {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-main .content-data .dangerous-events {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-main .content-data .sys-info {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-main .content-data .event-streams {
-    width: 50%;
-    max-width: 50%;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-main .content-data .chart::-webkit-scrollbar {
-    display: none;
 }
 
 
 main .chat-box {
     width: 100%;
-    max-height: 300px;
+    height: 60vh;
+    display: flex;
     overflow-y: auto;
+    flex-direction: column-reverse;
 }
+
 main .chat-box::-webkit-scrollbar {
     display: none;
 }
+
 main .chat-box .day {
     text-align: center;
     margin-bottom: 10px;
 }
+
 main .chat-box .day span {
     display: inline-block;
     padding: 6px 12px;
     border-radius: 20px;
     background: var(--light-blue);
     color: var(--blue);
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
 }
 
 main .chat-box .msg {
     display: flex;
-    grid-gap: 6px;
+    gap: 6px;
     align-items: flex-start;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    max-width: 100%;
+    flex-direction: column; /* 세로로 정렬 */
+    gap: 6px; /* 항목 사이의 간격 */
+    position: relative; /* 버튼 위치를 조정하기 위해 필요 */
 }
-main .chat-box .msg img {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    object-fit: cover;
-}
+
 main .chat-box .profile .username {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 600;
     display: inline-block;
     margin-right: 6px;
 }
+
 main .chat-box .profile .time {
-    font-size: 12px;
+    font-size: 16px;
     color: var(--dark-gray);
 }
 
 main .chat-box .chat p {
-    font-size: 14px;
-    padding: 6px 12px;
+    font-size: 22px;
+    padding: 12px 12px;
     display: inline-block;
-    max-width: 400px;
+    width: 700px;
+    max-width: 700px;
     line-height: 150%;
 }
+
+/* 버튼 컨테이너 */
+main .chat-box .buttons {
+    display: flex;
+    gap: 6px; /* 버튼 사이의 간격 */
+    margin-top: 10px; /* 텍스트와 버튼 사이의 간격 */
+}
+
+main .chat-box .buttons button {
+    background: var(--light);
+    border: 1px solid var(--dark-gray);
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: var(--dark);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+main .chat-box .buttons button:hover {
+    background: var(--gray);
+}
+
 main .chat-box .msg:not(.me) .chat p {
     border-radius: 0 5px 5px 5px;
     background: var(--blue);
     color: var(--light);
 }
+
 main .chat-box .msg.me {
     justify-content: flex-end;
+    margin-left: auto;
 }
+
 main .chat-box .msg.me .profile {
     text-align: right;
 }
+
 main .chat-box .msg.me p {
     background: var(--gray);
     border-radius: 5px 0 5px 5px;
+    margin-left: auto;
 }
 
 main form {
     margin-top: 10px;
 }
+
 main .form-group {
     width: 100%;
     display: flex;
-    grid-gap: 10px;
+    gap: 5px;
 }
+
 main .form-group input {
     flex-grow: 1;
-    padding: 10px 16px;
+    padding: 10px 10px;
     border-radius: 5px;
-    outline: none;
-    background: var(--gray);
     border: none;
+    background: var(--gray);
+    outline: none;
     transition: all .3s ease;
     width: 100%;
 }
+
 main .form-group input:focus {
     box-shadow: 0 0 0 1px var(--blue), 0 0 0 4px var(--light-blue);
 }
 
 main .btn-send {
-    padding: 0 16px;
+    padding: 0 10px;
     background: var(--blue);
     border-radius: 5px;
     color: var(--light);
@@ -455,22 +475,108 @@ main .btn-send {
     border: none;
     transition: all .3s ease;
 }
+
 main .btn-send:hover {
     background: var(--dark-blue);
 }
-/* MAIN */
-/* CONTENT */
+
+/* QR Button */
+#qr-button {
+    background-color: var(--blue);
+    color: var(--light);
+    border: none;
+    border-radius: 5px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+/* QR Code Container */
+#qr-code-container {
+    position: fixed;
+    bottom: 20px;
+    left: 90%;
+    transform: translateX(-50%);
+    background: var(--light);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.submenu .text {
+    margin-bottom: 20px;
+}
+
+form.chatbox-message {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 0;
+    background: var(--light);
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+textarea#message-input {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--gray);
+    resize: none;
+    height: 36px;
+}
+
+form.chatbox-message button {
+    background: var(--blue);
+    border: none;
+    border-radius: 5px;
+    color: var(--light);
+    cursor: pointer;
+    padding: 10px 16px;
+    margin-left: 20px;
+    transition: all .3s ease;
+}
+
+form.chatbox-message button:hover {
+    background: var(--dark-blue);
+}
 
 
-@media screen and (max-width: 768px) {
-    #content {
-        position: relative;
-        width: calc(100% - 60px);
-        transition: all .3s ease;
-    }
+button {
+    background-color: var(--green);
+    color: var(--light);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin: 6px 3px;
+}
 
-    nav .nav-link, nav.divider {
-        display: none;
-    }
-    
+button:hover {
+    background-color: var(--light-green);
+    transform: scale(1.05);
+}
+
+button:active {
+    background-color: var(--green);
+    transform: scale(0.95);
+}
+
+#create-room-button {
+    background-color: var(--blue);
+}
+
+#create-room-button:hover {
+    background-color: var(--light-blue);
+}
+
+#join-room-button {
+    background-color: var(--red);
+}
+
+#join-room-button:hover {
+    background-color: var(--dark-red);
 }
