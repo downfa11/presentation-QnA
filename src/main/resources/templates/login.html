@@ -27,7 +27,7 @@
 
         <a href="#" class="nav-link">
             <span class="material-symbols-outlined">sms</span>
-            <span class="badge">1</span>
+            <span class="badge">0</span>
         </a>
 
         <span class="divider"></span>
@@ -62,6 +62,9 @@
                     <p>환영합니다 <span class="nickname"></span> 님</p>
                     <button id="create-room-button" class="hidden">방만들기</button>
                     <button id="join-room-button" class="hidden">접속하기</button>
+                    <form action="kakao/logout" method="post" id="logout-button">
+                        <button type="submit">Logout</button>
+                    </form>
                 </div>
                 <div class="login-info">
                     <p><a th:href="@{|${kakaoUrl}|}" id="kakao-login">카카오로그인</a></p>

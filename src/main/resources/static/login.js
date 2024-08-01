@@ -5,26 +5,34 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             sessionStorage.setItem('nickname', data.nickname);
             sessionStorage.setItem('thumbnailImage', data.thumbnailImage);
-            sessionStorage.setItem('jwtToken', data.jwtToken);
+            sessionStorage.setItem('userId', data.userId);
 
             const nickname = sessionStorage.getItem('nickname');
             const thumbnailImage = sessionStorage.getItem('thumbnailImage');
-            const jwtToken = sessionStorage.getItem('jwtToken');
 
             const createRoomButton = document.getElementById('create-room-button');
             const joinRoomButton = document.getElementById('join-room-button');
             const kakaoLoginLink = document.getElementById('kakao-login');
+            const kakaoLogoutLink = document.getElementById('logout-button');
 
             const profileImg = document.querySelector('.profile img');
             const defaultProfile = document.querySelector('.default-profile');
 
 
-            if (jwtToken!="null") {
+            if (nickname!="null") {
 
-                if (!sessionStorage.getItem('userId')) {
+                if (!sessionStorage.getItem('username')) {
                     const tempId = prompt('Enter your nickname:');
-                    sessionStorage.setItem('userId', tempId);
+                    const encodedUserName = encodeURIComponent(tempId);
+                    sessionStorage.setItem('username', encodedUserName);
 
+                }
+
+                const redirectUrl = sessionStorage.getItem('redirectUrl');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                    sessionStorage.removeItem('redirectUrl');
+                    return;
                 }
 
                 if (profileImg && thumbnailImage) {
@@ -39,20 +47,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 const nicknameSpan = document.querySelector('.content-data p span');
                 if (nicknameSpan) {
                     nicknameSpan.textContent = nickname;
-                } else nicknameSpan.textContent = '--';
+                }
 
                 if (createRoomButton) createRoomButton.classList.remove('hidden');
                 if (joinRoomButton) joinRoomButton.classList.remove('hidden');
                 if (kakaoLoginLink) kakaoLoginLink.style.display = 'none';
+                if (kakaoLogoutLink) kakaoLogoutLink.style.display='block';
 
                 createRoomButton.addEventListener('click', async function() {
                     try {
                         const userId = sessionStorage.getItem('userId');
-                        const response = await fetch(`/rooms?userId=${userId}`, {
+                        const response = await fetch(`/rooms`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${jwtToken}`
+                                credentials: 'include'
                             }
                         });
 
@@ -78,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (createRoomButton) createRoomButton.classList.add('hidden');
                 if (joinRoomButton) joinRoomButton.classList.add('hidden');
                 if (kakaoLoginLink) kakaoLoginLink.style.display = 'block';
+                if (kakaoLogoutLink) kakaoLogoutLink.style.display ='none';
                 profileImg.style.display = 'none';
                 defaultProfile.style.display = 'block';
             }
@@ -105,17 +115,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function checkRoomExistence(roomId) {
         try {
+            const encodedRoomId = encodeURIComponent(roomId);
             const response = await fetch(`/find/rooms/${roomId}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
-                   // , 'Authorization': `Bearer ${jwtToken}`
+                    'Content-Type': 'application/json',
+                    credentials: 'include'
                 }
             });
 
                 if (response.ok) {
                     sessionStorage.setItem('roomId', roomId);
-                    window.location.href = `/rooms/${roomId}`;
+                    window.location.href = `/rooms/${encodedRoomId}`;
                 } else if (response.status === 404) {
                     alert(`Room '${roomId}' does not exist.`);
                 } else {

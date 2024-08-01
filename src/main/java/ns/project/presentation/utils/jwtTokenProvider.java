@@ -2,7 +2,9 @@ package ns.project.presentation.utils;
 
 
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -15,34 +17,49 @@ public class jwtTokenProvider {
 
     private String jwtSecret; // secret key
     private long jwtExpirationInMs;
-    private long refreshTokenExpirationInMs;
 
     public jwtTokenProvider() {
         this.jwtSecret = "NYd4nEtyLtcU7cpS/1HTFVmQJd7MmrP+HafWoXZjWNOL7qKccOOUfQNEx5yvG6dfdpuBeyMs9eEbRmdBrPQCNg==";
-        this.jwtExpirationInMs = 1000L * 300;
-        this.refreshTokenExpirationInMs = 1000L * 360;
+        this.jwtExpirationInMs = 1000L * 60 * 120;
     }
 
-    public String getJwtToken() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        return request.getHeader("Authorization");
+
+    public void setJwtCookie(HttpServletResponse response, String jwtToken) {
+        Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
+        jwtCookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        jwtCookie.setSecure(false); // HTTPS에서만 전송, local환경
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge((int) jwtExpirationInMs);
+        response.addCookie(jwtCookie);
+    }
+
+    public String getJwtFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwtToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     public String getMembershipIdbyToken() {
-        String accessToken = getJwtToken();
-        if (accessToken == null || accessToken.length() == 0) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String token = getJwtFromCookie(request);
+        if (token == null || token.length() == 0) {
             System.out.println("JwtToken is Invalid.");
             return "";
         }
 
-        String token = accessToken.replace("Bearer ", "");
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claims.get("sub", String.class);
+        return claims.getSubject();
     }
 
     public String generateJwtToken(String membershipId) {
@@ -58,7 +75,7 @@ public class jwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
 
-        return "Bearer " + token;
+        return token;
     }
 
 

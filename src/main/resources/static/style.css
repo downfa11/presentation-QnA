@@ -201,7 +201,7 @@ nav .profile .profile-link a:hover {
 /* MAIN */
 main {
     width: 100%;
-    padding: 24px 20px 20px;
+    padding: 20px 20px 20px;
 }
 
 main .title {
@@ -282,9 +282,8 @@ main .data .content-data {
 
 main .content-data .head {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    flex-direction: column;
+    margin-bottom: 20px;
 }
 
 main .content-data .head h3 {
@@ -372,37 +371,43 @@ main .chat-box .msg {
     border-radius: 8px;
     margin-bottom: 15px;
     max-width: 100%;
-    flex-direction: column; /* 세로로 정렬 */
-    gap: 6px; /* 항목 사이의 간격 */
-    position: relative; /* 버튼 위치를 조정하기 위해 필요 */
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
 }
 
 main .chat-box .profile .username {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 600;
     display: inline-block;
     margin-right: 6px;
 }
 
 main .chat-box .profile .time {
-    font-size: 16px;
+    font-size: 20px;
     color: var(--dark-gray);
 }
 
+main .chat-box .profile img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 main .chat-box .chat p {
-    font-size: 22px;
-    padding: 12px 12px;
+    font-size: 26px;
+    padding: 12px 24px;
     display: inline-block;
-    width: 700px;
-    max-width: 700px;
+    width: 70vw;
     line-height: 150%;
 }
 
-/* 버튼 컨테이너 */
+
 main .chat-box .buttons {
     display: flex;
-    gap: 6px; /* 버튼 사이의 간격 */
-    margin-top: 10px; /* 텍스트와 버튼 사이의 간격 */
+    gap: 6px;
+    margin-top: 10px;
 }
 
 main .chat-box .buttons button {
@@ -580,3 +585,144 @@ button:active {
 #join-room-button:hover {
     background-color: var(--dark-red);
 }
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    /* 일반적으로 모바일 기기의 화면 너비는 768px 이하 */
+
+    /* BODY */
+    body {
+        padding: 10px; /* 모바일 기기에서는 여백을 줄임 */
+    }
+
+    /* NAVBAR */
+    nav {
+        height: 56px; /* 모바일에서 높이를 줄임 */
+        padding: 0 10px; /* 모바일에서 패딩을 줄임 */
+        gap: 14px; /* 모바일에서 갭을 줄임 */
+    }
+
+    nav .form-group input {
+        padding: 8px 32px 8px 12px; /* 모바일에 맞게 인풋 필드 패딩 조정 */
+    }
+
+    nav .material-symbols-outlined[data-icon="menu"] {
+        font-size: 16px; /* 모바일에서 아이콘 크기를 줄임 */
+    }
+
+    nav .nav-link .material-symbols-outlined {
+        font-size: 16px; /* 모바일에서 아이콘 크기를 줄임 */
+    }
+
+    nav .profile img {
+        width: 32px; /* 모바일에서 프로필 이미지 크기를 줄임 */
+        height: 32px; /* 모바일에서 프로필 이미지 크기를 줄임 */
+    }
+
+    nav .profile .profile-link {
+        width: 140px; /* 모바일에서 프로필 링크 너비를 줄임 */
+    }
+
+    /* MAIN */
+    main {
+        padding: 10px 10px 10px; /* 모바일에서 패딩을 줄임 */
+    }
+
+    main .title {
+        font-size: 24px; /* 모바일에서 폰트 크기를 줄임 */
+    }
+
+    main .breadcrumbs li,
+    main .breadcrumbs li a {
+        font-size: 12px; /* 모바일에서 폰트 크기를 줄임 */
+    }
+
+    main .info-data {
+        grid-template-columns: 1fr; /* 모바일에서 단일 열 레이아웃으로 변경 */
+        gap: 10px; /* 모바일에서 갭을 줄임 */
+    }
+
+    main .data {
+        grid-template-columns: 1fr; /* 모바일에서 단일 열 레이아웃으로 변경 */
+    }
+
+    main .content-data .head h3 {
+        font-size: 18px; /* 모바일에서 폰트 크기를 줄임 */
+    }
+
+    main .chat-box {
+        height: 50vh; /* 모바일에서 채팅 박스 높이를 줄임 */
+    }
+
+    main .chat-box .profile .username {
+        font-size: 20px; /* 모바일에서 폰트 크기를 줄임 */
+    }
+
+    main .chat-box .profile .time {
+        font-size: 16px; /* 모바일에서 폰트 크기를 줄임 */
+    }
+
+    main .chat-box .chat p {
+        font-size: 20px; /* 모바일에서 폰트 크기를 줄임 */
+        padding: 10px 20px; /* 모바일에 맞게 패딩 조정 */
+        width: 100%; /* 모바일에서 채팅 메시지 너비를 조정 */
+    }
+
+    main .chat-box .msg:not(.me) .chat p {
+        border-radius: 0 5px 5px 5px; /* 모바일에서 메시지 박스의 둥근 모서리 유지 */
+    }
+
+    main .chat-box .msg.me p {
+        border-radius: 5px 0 5px 5px; /* 모바일에서 메시지 박스의 둥근 모서리 유지 */
+    }
+
+    main .form-group input {
+        padding: 8px 8px; /* 모바일에 맞게 인풋 필드 패딩 조정 */
+    }
+
+    main .btn-send {
+        padding: 0 8px; /* 모바일에 맞게 버튼 패딩 조정 */
+    }
+
+    #qr-code-container {
+        left: auto; /* 모바일에서는 고정 위치를 변경하여 더 나은 사용자 경험 제공 */
+        right: 10px; /* 오른쪽으로 고정 */
+        transform: translateX(0); /* 모바일에서 QR 코드 컨테이너의 위치 조정 */
+    }
+
+    form.chatbox-message {
+        padding: 8px 0; /* 모바일에서 패딩을 줄임 */
+    }
+
+    textarea#message-input {
+        height: 32px; /* 모바일에서 텍스트 에어리어 높이를 줄임 */
+    }
+
+    form.chatbox-message button {
+        padding: 8px 14px; /* 모바일에서 버튼 패딩을 줄임 */
+        margin-left: 10px; /* 모바일에서 버튼 간격을 줄임 */
+    }
+
+    /* BUTTONS */
+    button {
+        padding: 6px 12px; /* 모바일에서 버튼 패딩을 줄임 */
+        font-size: 12px; /* 모바일에서 폰트 크기를 줄임 */
+        margin: 4px 2px; /* 모바일에서 버튼 간격을 줄임 */
+    }
+
+    #qr-button {
+        margin-top: 10px; /* 모바일에서 마진을 줄임 */
+        padding: 10px 20px; /* 모바일에서 버튼 패딩을 줄임 */
+    }
+
+    /* SIDEBAR */
+    #sidebar.hide + #content {
+        left: 50px; /* 모바일에서 숨겨진 사이드바의 위치 조정 */
+    }
+
+    #sidebar {
+        width: 60px; /* 모바일에서 사이드바 너비를 줄임 */
+        /* 사이드바 항목 스타일 추가 */
+    }
+}
+

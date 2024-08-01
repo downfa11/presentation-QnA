@@ -27,7 +27,7 @@
 
         <a href="#" class="nav-link">
             <span class="material-symbols-outlined">sms</span>
-            <span class="badge">1</span>
+            <span class="badge">0</span>
         </a>
 
         <span class="divider"></span>
@@ -45,7 +45,7 @@
 
     <!-- MAIN -->
     <main>
-        <h1 class="title">Slido ToyProject</h1>
+        <h1 class="title">Presentation QnA</h1>
         <ul class="breadcrumbs">
             <li><a href="/">Home</a></li>
             <li class="divider">/</li>
@@ -55,23 +55,19 @@
         <div class="data">
             <div class="content-data left">
                 <div class="head">
-                    <h3>Presentation QnA</h3>
-                    <div class="menu">
-                    </div>
+                    <!--<h3>현재 방 이름 : <span id="room-name"> </span></h3>-->
+                    <p>환영합니다 <span th:text="${nickname}"></span> 님</p>
+
+                    <ul class="sort-pagination">
+                        <li><a href="#" data-sort="date" data-order="desc">최신순</a></li>
+                        <li class="divider">/</li>
+                        <li><a href="#" data-sort="date" data-order="asc">역순</a></li>
+                        <li class="divider">/</li>
+                        <li><a href="#" data-sort="likesCount" data-order="asc">좋아요 많은 순</a></li>
+                        <li class="divider">/</li>
+                        <li><a href="#" data-sort="likesCount" data-order="desc">좋아요 적은 순</a></li>
+                    </ul>
                 </div>
-
-                <div>현재 방 이름 : <span id="room-name"> </span> </div>
-                <p>환영합니다 <span th:text="${nickname}"></span> 님</p>
-
-                <ul class="sort-pagination">
-                    <li><a href="#" data-sort="date" data-order="desc">최신순</a></li>
-                    <li class="divider">/</li>
-                    <li><a href="#" data-sort="date" data-order="asc">역순</a></li>
-                    <li class="divider">/</li>
-                    <li><a href="#" data-sort="likesCount" data-order="asc">좋아요 많은 순</a></li>
-                    <li class="divider">/</li>
-                    <li><a href="#" data-sort="likesCount" data-order="desc">좋아요 적은 순</a></li>
-                </ul>
 
                 <div class="chat-box" id="comments">
                     <p class="day"><span>Today</span></p>
@@ -87,7 +83,7 @@
             <div class="content-data right">
             <div class="submenu">
                 <div class="text">
-                    <p>Join to Slido.Project</p>
+                    <p>Join to .Project</p>
                 </div>
         </div>
 

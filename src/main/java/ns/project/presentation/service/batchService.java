@@ -1,23 +1,18 @@
 package ns.project.presentation.service;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import ns.project.presentation.dto.CommentDto;
-import ns.project.presentation.dto.RoomDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ns.project.presentation.service.SlidoService.*;
 
@@ -30,8 +25,40 @@ public class batchService {
     private final ObjectMapper objectMapper;
     private final SlidoService slidoService;
 
-    @Value("${redis.expiredtime.comment:20}")
+    @Value("${redis.expiredtime.comment:60}")
     Long defaultTime;
+
+    public String findCurrentRoom(String roomId) {
+        Set<String> keys = redisTemplate.keys(String.format("room:%s:timestamp:*", roomId));
+        if (keys == null || keys.isEmpty()) {
+            System.out.println("Room not found for roomId: " + roomId);
+            return null;
+        }
+
+        String latestKey = null;
+        long latestTimestamp = 0;
+
+        for (String key : keys) {
+            String[] parts = key.split(":");
+            if (parts.length != 4) {
+                continue;
+            }
+
+            try {
+                String timestampStr = parts[3];
+                long timestamp = Long.parseLong(timestampStr);
+
+                if (timestamp > latestTimestamp) {
+                    latestTimestamp = timestamp;
+                    latestKey = key;
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing timestamp for key: " + key);
+            }
+        }
+
+        return latestKey;
+    }
 
     @Scheduled(fixedRateString = "${batch.fixedRate:3000}") // 3sec. 60000=1min
     public void processAllRoomComments() {
@@ -58,53 +85,81 @@ public class batchService {
 
     private void processCommentsForRoom(String roomId) {
         String roomKey = slidoService.findCurrentRoom(roomId);
+        if (roomKey == null) {
+            return;
+        }
 
         String commentsPattern = String.format(COMMENTS_KEY_PATTERN, roomKey, "*", "*");
         Set<String> commentKeys = redisTemplate.keys(commentsPattern);
 
         if (commentKeys == null || commentKeys.isEmpty()) {
-            // System.out.println("No comments found for roomId: " + roomId);
             return;
         }
+
         LocalDateTime mostRecentTimestamp = null;
 
         for (String commentKey : commentKeys) {
             String contents = redisTemplate.opsForValue().get(commentKey);
-            String timestampStr = contents.split("timestamp:")[1];
-            LocalDateTime timestamp = LocalDateTime.parse(timestampStr, DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            try {
+                String timestampStr = contents.split("timestamp:")[1];
+                LocalDateTime timestamp = LocalDateTime.parse(timestampStr, DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-            if (mostRecentTimestamp == null || timestamp.isAfter(mostRecentTimestamp)) {
-                mostRecentTimestamp = timestamp;
+                if (mostRecentTimestamp == null || timestamp.isAfter(mostRecentTimestamp)) {
+                    mostRecentTimestamp = timestamp;
+                }
+            } catch (Exception e) {
+                System.err.println("Error parsing timestamp from comment: " + commentKey);
             }
         }
 
         if (mostRecentTimestamp != null && mostRecentTimestamp.plusMinutes(defaultTime).isBefore(LocalDateTime.now())) {
-
-            List<CommentDto> commentDtos = new ArrayList<>();
-            for (String commentKey : commentKeys) {
-                String[] commentKeyParts = commentKey.split(":");
-                String commentId = commentKeyParts[2];
-                String commentUserId = commentKeyParts[3];
-
-                String[] contentsInfo = redisTemplate.opsForValue().get(commentKey).split(":");
-                String contents = contentsInfo[0];
-                String contentsCreatedAt = contentsInfo[2];
-
-                Long likesCount = slidoService.getLikesCount(roomKey, commentId);
-
-                CommentDto commentDto = new CommentDto(commentId, commentUserId, contents,contentsCreatedAt, likesCount);
-                commentDtos.add(commentDto);
-            }
-
-            RoomDto roomDto = new RoomDto(roomId, roomKey.split(":")[3], commentDtos);
+            System.out.println("room deleted: " + roomId);
             try {
-                String result = objectMapper.writeValueAsString(roomDto);
-                System.out.println("room deleted: " + result);
-                deleteRoom(roomId);
-            } catch (JsonProcessingException e) {
-                System.out.println("JSON parsing error: " + e);
+                backupRoomData(roomId);
+            } catch (IOException e) {
+                System.err.println("Failed to backup room data: " + e.getMessage());
+            }
+            deleteRoom(roomId);
+        }
+    }
+
+    private void backupRoomData(String roomId) throws IOException {
+        Map<String, Object> backupData = new HashMap<>();
+
+        Set<String> roomKeys = redisTemplate.keys(String.format("room:%s:timestamp:*", roomId));
+        if (roomKeys != null) {
+            for (String roomKey : roomKeys) {
+                String roomData = redisTemplate.opsForValue().get(roomKey);
+                backupData.put(roomKey, roomData);
+
+                String commentsPattern = String.format(COMMENTS_KEY_PATTERN, roomKey, "*", "*");
+                Set<String> commentKeys = redisTemplate.keys(commentsPattern);
+                if (commentKeys != null) {
+                    for (String commentKey : commentKeys) {
+                        String commentData = redisTemplate.opsForValue().get(commentKey);
+                        backupData.put(commentKey, commentData);
+                    }
+                }
+
+                String likesPattern = String.format(LIKES_KEY_PATTERN, roomKey, "*");
+                Set<String> likeKeys = redisTemplate.keys(likesPattern);
+                if (likeKeys != null) {
+                    for (String likeKey : likeKeys) {
+                        String likeData = redisTemplate.opsForValue().get(likeKey);
+                        backupData.put(likeKey, likeData);
+                    }
+                }
             }
         }
+
+        String backupJson = objectMapper.writeValueAsString(backupData);
+        System.out.println("delete room : "+backupJson);
+        saveBackupToFile(roomId, backupJson);
+    }
+
+    private void saveBackupToFile(String roomId, String backupJson) {
+        String backupKey = String.format("backup:room:%s:%s", roomId, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        redisTemplate.opsForValue().set(backupKey, backupJson);
     }
 
     private void deleteRoom(String roomId) {

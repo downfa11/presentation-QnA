@@ -1,13 +1,15 @@
 package ns.project.presentation.controller;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import ns.project.presentation.service.UserService;
 import ns.project.presentation.utils.jwtToken;
+import ns.project.presentation.utils.jwtTokenProvider;
 import org.springframework.http.*;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ public class UserController {
         response.put("nickname", session.getAttribute("nickname"));
         response.put("thumbnailImage", session.getAttribute("thumbnailImage"));
         response.put("jwtToken", session.getAttribute("jwtToken"));
+        response.put("userId",session.getAttribute("userId"));
 
          return ResponseEntity.ok(response);
     }

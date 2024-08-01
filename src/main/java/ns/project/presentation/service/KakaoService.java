@@ -114,5 +114,35 @@ public class KakaoService {
     }
 
 
+    public void logout(String accessToken) throws Exception {
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new Exception("Access token is required for logout");
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + accessToken);
+            headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpEntity<String> httpEntity = new HttpEntity<>(headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    KAKAO_API_URI + "/v2/user/logout",
+                    HttpMethod.POST,
+                    httpEntity,
+                    String.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("로그아웃 성공");
+            } else {
+                log.error("로그아웃 실패: " + response.getStatusCode());
+                throw new Exception("Logout failed with status: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            throw new Exception("API call failed during logout", e);
+        }
+    }
+
 
 }

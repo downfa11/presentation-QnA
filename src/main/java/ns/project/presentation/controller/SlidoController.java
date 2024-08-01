@@ -26,14 +26,13 @@ public class SlidoController {
     private final jwtTokenProvider jwtProvider;
 
     @PostMapping("/rooms")
-    public ResponseEntity<Void> createRoom(@RequestParam String userId) {
-        slidoService.createRoom(userId);
+    public ResponseEntity<Void> createRoom() {
+        slidoService.createRoom();
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/find/rooms/{roomId}")
     public ResponseEntity<String> findCurrentRoom(@PathVariable String roomId) {
-        // token 검사 필요
 
         String currentRoom = slidoService.findCurrentRoom(roomId);
         if (currentRoom == null) {
@@ -46,10 +45,10 @@ public class SlidoController {
     public ResponseEntity<Void> registerComment(@PathVariable String roomId,
                                                 @RequestBody CommentDto comment) {
         String contents = comment.getContents();
-        String userId = comment.getUserId();
-        System.out.println(comment);
+        String thumbnailImage = comment.getThumbnailImage();
+        String username = comment.getUsername();
 
-        slidoService.registerComment(roomId, contents,userId);
+        slidoService.registerComment(roomId, contents,username, thumbnailImage);
         return ResponseEntity.ok().build();
     }
 
@@ -57,10 +56,11 @@ public class SlidoController {
     public ResponseEntity<Void> modifyComment(@PathVariable String roomId,
                                               @RequestBody CommentDto comment) {
         String contents = comment.getContents();
-        String userId = comment.getUserId();
         String commentId = comment.getCommentId();
+        String username = comment.getUsername();
+        String thumbnailImage = comment.getThumbnailImage();
 
-        slidoService.modifyComment(roomId, commentId, contents);
+        slidoService.modifyComment(roomId, commentId,username, contents,thumbnailImage);
         return ResponseEntity.ok().build();
     }
 
@@ -78,9 +78,11 @@ public class SlidoController {
 
     @PostMapping("/rooms/{roomId}/comments/{commentId}/likes")
     public ResponseEntity<Long> updateLikes(@PathVariable String roomId,
-                                            @PathVariable String commentId,
-                                            @RequestParam String userId) {
-        Long likesCount = slidoService.updateLikes(roomId, commentId, userId);
+                                            @PathVariable String commentId) {
+        Long likesCount = slidoService.updateLikes(roomId, commentId);
+        if(likesCount==-1L)
+            System.out.println("updateLikes error - roomId:"+roomId+", commentId:"+commentId);
+
         return ResponseEntity.ok(likesCount);
     }
 
@@ -95,7 +97,7 @@ public class SlidoController {
     @GetMapping("/qrcode/{roomId}")
     public ResponseEntity<byte[]> getQRCode(@PathVariable String roomId, HttpServletRequest request) {
 
-        String baseURL = getBaseURL(request);  // 현재 요청의 기본 URL을 가져옵니다.
+        String baseURL = getBaseURL(request);
         String roomURL = baseURL + "/rooms/" + roomId;
 
         try {

@@ -37,8 +37,8 @@ public class SlidoService {
 
 
 
-    public void createRoom(String userId) {
-        //String userId = jwtProvider.getMembershipIdbyToken();
+    public void createRoom() {
+        String userId = jwtProvider.getMembershipIdbyToken();
 
         LocalDateTime current = LocalDateTime.now();
         String timestamp = current.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -79,12 +79,14 @@ public class SlidoService {
 
 
     @Transactional
-    public void registerComment(String roomId, String contents, String userId) {
-        //String userId = jwtProvider.getMembershipIdbyToken();
+    public void registerComment(String roomId, String contents, String username ,String thumbnailImage) {
+        String userId = jwtProvider.getMembershipIdbyToken();
         String roomKey = findCurrentRoom(roomId);
 
-        if (roomKey == null)
+        if (roomKey == null || userId.equals("")) {
+            System.out.println("roomKey or userId is incorrect.");
             return;
+        }
 
         String commentIdKey = String.format(COMMENT_ID_KEY_PATTERN, roomId);
         Long commentId = redisTemplate.opsForValue().increment(commentIdKey);
@@ -94,18 +96,23 @@ public class SlidoService {
         LocalDateTime current = LocalDateTime.now();
         String timestamp = current.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-        redisTemplate.opsForValue().set(key, contents+":timestamp:"+timestamp,defaultTime, TimeUnit.MINUTES);
+        String value = "username:"+username+":contents:"+contents+":thumbnailImage:"+thumbnailImage+":timestamp:"+timestamp;
+        redisTemplate.opsForValue().set(key, value ,defaultTime, TimeUnit.MINUTES);
+
        System.out.println("Comment registered with key: " + key);
+       System.out.println("value : " + value);
     }
 
 
     @Transactional
-    public void modifyComment(String roomId, String commentId, String contents) {
+    public void modifyComment(String roomId, String commentId,String username, String contents,String thumbnailImage) {
         String userId = jwtProvider.getMembershipIdbyToken();
         String roomKey = findCurrentRoom(roomId);
 
-        if (roomKey == null)
+        if (roomKey == null || userId.equals("")) {
+            System.out.println("roomKey or userId is incorrect.");
             return;
+        }
 
         String commentKeyPattern = String.format(COMMENTS_KEY_PATTERN, roomKey, commentId, "*");
         Set<String> keys = redisTemplate.keys(commentKeyPattern);
@@ -121,8 +128,13 @@ public class SlidoService {
                 LocalDateTime current = LocalDateTime.now();
                 String timestamp = current.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
-                redisTemplate.opsForValue().set(key, contents+":timestamp:"+timestamp,defaultTime, TimeUnit.MINUTES);
-                System.out.println("Comment modified with key: " + key);
+                String value = "username:"+username+":contents:"+contents+":thumbnailImage:"+thumbnailImage+":timestamp:"+timestamp;
+                redisTemplate.opsForValue().set(key, value ,defaultTime, TimeUnit.MINUTES);
+
+                System.out.println("Comment registered with key: " + key);
+                System.out.println("value: " + value);
+                System.out.println("thumnail: "+thumbnailImage);
+
                 return;
             }
             else System.out.println("User is not authorized to modify this comment id:"+userId+", roomId:"+roomId);
@@ -134,14 +146,16 @@ public class SlidoService {
         String userId = jwtProvider.getMembershipIdbyToken();
         String roomKey = findCurrentRoom(roomId);
 
-        if (roomKey == null)
+        if (roomKey == null || userId.equals("")) {
+            System.out.println("roomKey or userId is incorrect.");
             return;
+        }
 
         String commentKeyPattern = String.format(COMMENTS_KEY_PATTERN, roomKey, commentId, "*");
         Set<String> keys = redisTemplate.keys(commentKeyPattern);
 
         if (keys == null || keys.isEmpty()) {
-            System.out.println("Comment not found for commentId: " + roomId);
+            System.out.println("Comment not found for roomId: " + roomId+", commentId: "+commentId);
         }
 
         for (String key : keys) {
@@ -169,8 +183,10 @@ public class SlidoService {
 
 
     @Transactional
-    public Long updateLikes(String roomId, String commentId,String userId) {
-        //String userId = jwtProvider.getMembershipIdbyToken().toString();
+    public Long updateLikes(String roomId, String commentId) {
+        String userId = jwtProvider.getMembershipIdbyToken().toString();
+        if(userId.equals(""))
+            return -1L;
 
         if (isUserLiked(roomId, commentId, userId))
             removeLike(roomId, commentId, userId);
@@ -227,13 +243,19 @@ public class SlidoService {
 
             String commentId = commentKeyParts[commentKeyParts.length - 2];
             String commentUserId = commentKeyParts[commentKeyParts.length - 1];
+            // "username:"+username+":contents:"+contents+":thumbnailImage:"+thumbnailImage+":timestamp:"+timestamp
+            String contentsInfo = redisTemplate.opsForValue().get(commentKey);
+            String[] contentsInfoSlice = redisTemplate.opsForValue().get(commentKey).split(":");
 
-            String[] contentsInfo = redisTemplate.opsForValue().get(commentKey).split(":");
-            String contents = contentsInfo[0];
-            String contentsCreatedAt = contentsInfo[2];
+            String username = contentsInfo.substring(contentsInfo.indexOf("username:") + "username:".length(), contentsInfo.indexOf(":contents:"));
+            String contents = contentsInfo.substring(contentsInfo.indexOf(":contents:") + ":contents:".length(), contentsInfo.lastIndexOf(":thumbnailImage:"));
+
+            String contentsCreatedAt = contentsInfoSlice[contentsInfoSlice.length - 1];
+            String contentsThumbnailImage = contentsInfoSlice[contentsInfoSlice.length - 4] + ":" + contentsInfoSlice[contentsInfoSlice.length - 3];
+
 
             Long likesCount = getLikesCount(roomId, commentId);
-            CommentDto commentDto = new CommentDto(commentId, commentUserId, contents,contentsCreatedAt, likesCount);
+            CommentDto commentDto = new CommentDto(commentId, commentUserId,username, contents,contentsThumbnailImage,contentsCreatedAt, likesCount);
             commentDtos.add(commentDto);
         }
 

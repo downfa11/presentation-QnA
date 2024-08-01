@@ -2,55 +2,70 @@ document.addEventListener("DOMContentLoaded", function () {
     let sortCriterion = "date";
     let sortOrder = "desc";
     const userId = sessionStorage.getItem('userId');
+    const username = decodeURIComponent(sessionStorage.getItem('username'));
 
-    fetch('/api/user-info')
+    function checkLoginAndRedirect() {
+        const currentUrl = window.location.href;
+
+        if (!userId || username=='null') {
+            console.warn("User is not logged in.");
+
+            sessionStorage.setItem('redirectUrl', currentUrl);
+
+            window.location.href = '/';
+            return false;
+        }
+
+        console.log("User is logged in. " + decodeURIComponent(username) + " (userId:" + userId + ")");
+        return true;
+    }
+
+
+    function fetchUserInfo() {
+        return fetch('/api/user-info')
         .then(response => response.json())
         .then(data => {
             sessionStorage.setItem('nickname', data.nickname);
             sessionStorage.setItem('thumbnailImage', data.thumbnailImage);
-            sessionStorage.setItem('jwtToken', data.jwtToken);
 
             const nickname = sessionStorage.getItem('nickname');
             const thumbnailImage = sessionStorage.getItem('thumbnailImage');
-            const jwtToken = sessionStorage.getItem('jwtToken');
 
             const profileImg = document.querySelector('.profile img');
             const defaultProfile = document.querySelector('.default-profile');
 
-
-            if (jwtToken!="null" || !sessionStorage.getItem(userId)) {
-
-                console.log("User is logged in. "+nickname +" (userId:"+userId+")");
-
-                if (profileImg && thumbnailImage) {
-                    profileImg.src = thumbnailImage;
-                    profileImg.style.display = 'block';
-                    defaultProfile.style.display = 'none';
-                } else {
-                    profileImg.style.display = 'none';
-                    defaultProfile.style.display = 'block';
-                }
-
-                const nicknameSpan = document.querySelector('.content-data p span');
-                if (nicknameSpan) {
-                    nicknameSpan.textContent = userId;
-                }
+            if (profileImg && thumbnailImage) {
+                profileImg.src = thumbnailImage;
+                profileImg.style.display = 'block';
+                defaultProfile.style.display = 'none';
+            } else {
+                profileImg.style.display = 'none';
+                defaultProfile.style.display = 'block';
             }
-            else {
-                console.warn("User is not logged in.");
-                window.location.href = '/';
+
+            const nicknameSpan = document.querySelector('.content-data p span');
+            if (nicknameSpan) {
+                nicknameSpan.textContent = username;
             }
         })
         .catch(error => {
             console.error('Error fetching user info:', error);
+            window.location.href = '/';
         });
+}
+
+    if (!checkLoginAndRedirect()) {
+        return;
+    }
+
+    fetchUserInfo();
 
     const url = window.location.href;
     const lastSegment = url.substring(url.lastIndexOf('/') + 1);
 
-    let roomId = lastSegment;
-    const roomNameSpan = document.getElementById("room-name");
-    roomNameSpan.textContent = roomId;
+    let roomId = decodeURIComponent(lastSegment);
+    // const roomNameSpan = document.getElementById("room-name");
+    // roomNameSpan.textContent = roomId;
 
     const menuToggle = document.querySelectorAll(".menu");
 
@@ -80,10 +95,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function generateQRCode() {
         try {
-            const response = await fetch(`/qrcode/${roomId}`, {
+            const response = await fetch(`/qrcode/${encodeURIComponent(roomId)}`, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'image/png'
+                    'Accept': 'image/png',
+                    credentials: 'include'
                 }
             });
 
@@ -166,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function fetchData(criteria, order) {
         try {
-            const response = await fetch(`/rooms/${roomId}/comments`);
+            const response = await fetch(`/rooms/${encodeURIComponent(roomId)}/comments`);
             if (!response.ok) {
                 throw new Error('네트워크 응답이 정상적이지 않습니다');
             }
@@ -174,7 +190,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const sortedComments = sortComments(data.comments, criteria, order);
             displayMessages(sortedComments);
         } catch (error) {
-            console.error('데이터를 가져오는 중 오류 발생:', error);
+            console.error(error);
+            alert('방의 유효기간이 만료되었습니다. 홈으로 이동합니다.');
+            window.location.href = '/';
         }
     }
 
@@ -183,8 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             sortCriterion = this.dataset.sort;
             sortOrder = this.dataset.order;
-
-            console.log(this.dataset);
             fetchData(sortCriterion, sortOrder);
         });
     });
@@ -205,13 +221,16 @@ document.addEventListener("DOMContentLoaded", function () {
     async function handleLike(event) {
         const button = event.target.closest('.like-button');
         const commentElem = button.closest('.msg');
-        const commentId = commentElem.dataset.commentid;
+        console.log(commentElem.dataset);
+        const commentid = commentElem.dataset.commentid;
+        console.log("commentId : "+commentid);
 
         try {
-            const response = await fetch(`/rooms/${roomId}/comments/${commentId}/likes?userId=${userId}`, {
+            const response = await fetch(`/rooms/${roomId}/comments/${commentid}/likes`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    credentials: 'include'
                 }
             });
 
@@ -227,17 +246,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function handleEdit(event) {
         const commentElem = event.target.closest('.msg');
-        const commentId = commentElem.dataset.commentId;
+        const commentid = commentElem.dataset.commentid;
+        const thumbnailImage = sessionStorage.getItem('thumbnailImage');
+        const username = sessionStorage.getItem('username');
+        const userId = sessionStorage.getItem('userId');
+
         const newContent = prompt('수정할 내용을 입력하세요:', commentElem.querySelector('p').innerText);
 
         if (newContent) {
             try {
-                const response = await fetch(`/rooms/${roomId}/comments/${commentId}`, {
+                const response = await fetch(`/rooms/${roomId}/comments/${commentid}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        credentials: 'include'
                     },
-                    body: JSON.stringify({ contents: newContent })
+                    body: JSON.stringify({ userId:userId, contents: newContent, commentId: commentid, username: username,thumbnailImage: thumbnailImage })
                 });
 
                 if (response.ok) {
@@ -252,12 +276,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function handleDelete(event) {
-        const commentId = event.target.closest('.msg').dataset.commentId;
+        const commentid = event.target.closest('.msg').dataset.commentid;
 
         if (confirm('정말로 삭제하시겠습니까?')) {
             try {
-                const response = await fetch(`/rooms/${roomId}/comments/${commentId}`, {
-                    method: 'DELETE'
+                const response = await fetch(`/rooms/${roomId}/comments/${commentid}`, {
+                    method: 'DELETE',
+                    headers: {
+                        credentials: 'include'
+                    }
                 });
 
                 if (response.ok) {
@@ -276,8 +303,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const response = await fetch(`/find/rooms/${roomId}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
-                    // , 'Authorization': `Bearer ${jwtToken}`
+                    'Content-Type': 'application/json',
+                    credentials: 'include'
                 }
             });
 
@@ -324,10 +351,11 @@ document.addEventListener("DOMContentLoaded", function () {
         comments.forEach(comment => {
             const msgClass = comment.userId === userId ? 'msg me' : 'msg';
             const html = `
-            <div class="${msgClass}" data-date="${comment.date}" data-likesCount="${comment.likesCount}" data-commentId="${comment.commentId}">
+            <div class="${msgClass}" data-date="${comment.date}" data-likesCount="${comment.likesCount}" data-username="${comment.username}" data-commentId="${comment.commentId}" data-thumbnailImage="${comment.thumbnailImage}">
                 <div class="chat">
                     <div class="profile">
-                        <span class="username">${comment.userId}</span>
+                        <img src="${comment.thumbnailImage}" alt="Profile Image" class="profile-img"/>
+                        <span class="username">${decodeURIComponent(comment.username)}</span>
                         <span class="time">${formatTimestamp(comment.date)}</span>
                     </div>
                     <p>${comment.contents}</p>
@@ -379,11 +407,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const message = inputField.value.trim();
-        if (!message) {
+        const message = inputField.value;
+        if (!message.trim()) {
             console.log("Empty message, not sending");
             return;
         }
+
+        const thumbnailImage = sessionStorage.getItem('thumbnailImage');
+        const username = sessionStorage.getItem('username');
+        const userId = sessionStorage.getItem('userId');
 
         try {
             const response = await fetch(`/rooms/${roomId}/comments`, {
@@ -391,7 +423,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ contents: message, userId: userId })
+                body: JSON.stringify({ userId:userId, contents: message, username: username,thumbnailImage: thumbnailImage })
             });
 
             if (response.ok) {
@@ -411,7 +443,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error('Error in pollData:', error);
         } finally {
-            setTimeout(pollData, 1500);
+            setTimeout(pollData, 500);
         }
     }
 
