@@ -25,6 +25,9 @@ public class SlidoController {
     private final SlidoService slidoService;
     private final jwtTokenProvider jwtProvider;
 
+    private final String[] blockedStrings = {"javascript:", "onload", "onerror", "onclick"};
+
+
     @PostMapping("/rooms")
     public ResponseEntity<Void> createRoom() {
         slidoService.createRoom();
@@ -48,6 +51,12 @@ public class SlidoController {
         String thumbnailImage = comment.getThumbnailImage();
         String username = comment.getUsername();
 
+        for (String blocked : blockedStrings) {
+            if (contents.toLowerCase().contains(blocked)) {
+                throw new IllegalArgumentException("Contents contain forbidden text: " + blocked);
+            }
+        }
+
         slidoService.registerComment(roomId, contents,username, thumbnailImage);
         return ResponseEntity.ok().build();
     }
@@ -59,6 +68,12 @@ public class SlidoController {
         String commentId = comment.getCommentId();
         String username = comment.getUsername();
         String thumbnailImage = comment.getThumbnailImage();
+
+        for (String blocked : blockedStrings) {
+            if (contents.toLowerCase().contains(blocked)) {
+                throw new IllegalArgumentException("Contents contain forbidden text: " + blocked);
+            }
+        }
 
         slidoService.modifyComment(roomId, commentId,username, contents,thumbnailImage);
         return ResponseEntity.ok().build();

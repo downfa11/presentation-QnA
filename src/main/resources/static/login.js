@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const defaultProfile = document.querySelector('.default-profile');
 
 
+            console.log("nickname: "+nickname);
             if (nickname!="null") {
 
                 if (!sessionStorage.getItem('username')) {
@@ -29,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const redirectUrl = sessionStorage.getItem('redirectUrl');
+                console.log("redirectUrl : "+redirectUrl);
                 if (redirectUrl) {
                     window.location.href = redirectUrl;
                     sessionStorage.removeItem('redirectUrl');

@@ -46,7 +46,7 @@
 
     <!-- MAIN -->
     <main>
-        <h1 class="title">Slido ToyProject</h1>
+        <h1 class="title">Presentation QnA</h1>
         <ul class="breadcrumbs">
             <li><a href="/" class="active">Home</a></li>
             <li class="divider">/</li>
@@ -57,7 +57,6 @@
 
         <div class="data">
             <div class="content-data">
-                <div>hi here is login page.</div>
                 <div class="user-info">
                     <p>환영합니다 <span class="nickname"></span> 님</p>
                     <button id="create-room-button" class="hidden">방만들기</button>
@@ -66,8 +65,13 @@
                         <button type="submit">Logout</button>
                     </form>
                 </div>
+                </br></br>
                 <div class="login-info">
-                    <p><a th:href="@{|${kakaoUrl}|}" id="kakao-login">카카오로그인</a></p>
+                    <p>
+                        <a th:href="@{|${kakaoUrl}|}" id="kakao-login">
+                            <img th:src="@{/images/kakao_login_medium_wide.png}" alt="카카오 로그인" />
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

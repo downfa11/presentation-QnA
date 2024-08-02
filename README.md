@@ -21,3 +21,14 @@ In docker-compose.yaml, set the following:
 - `REDIS_EXPIREDTIME_COMMENT` : The room will be deleted if this time elapses since the last comment (minutes, default=20)
 
 - `BATCH_FIXEDRATE` : Interval for scheduling batch (milliseconds, default=3000)
+
+</br></br>
+
+## Service image (kakao login)
+
+![Untitled.png](Untitled.png)
+
+## Service image (mobile)
+<img src="naver.jpg" alt="Naver" width="250" height="500">
+
+

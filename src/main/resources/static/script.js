@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function checkLoginAndRedirect() {
         const currentUrl = window.location.href;
 
-        if (!userId || username=='null') {
+        if (!userId || !username) {
             console.warn("User is not logged in.");
 
             sessionStorage.setItem('redirectUrl', currentUrl);
