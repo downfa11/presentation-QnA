@@ -298,6 +298,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    async function handleComplete(event) {
+        const commentid = event.target.closest('.msg').dataset.commentid;
+
+        if (confirm('정말로 완료하시겠습니까?')) {
+            try {
+                const response = await fetch(`/rooms/${roomId}/comments/${commentid}/complete`, {
+                    method: 'GET',
+                    headers: {
+                        credentials: 'include'
+                    }
+                });
+
+                if (response.ok) {
+                    fetchData(sortCriterion, sortOrder);
+                } else {
+                    console.error('Failed to complete comment:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error completing comment:', error);
+            }
+        }
+    }
+
     async function checkRoomExistence(roomId) {
         try {
             const response = await fetch(`/find/rooms/${roomId}`, {
@@ -388,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         document.querySelectorAll('.done-button').forEach(button => {
-            button.addEventListener('click', handleDelete);
+            button.addEventListener('click', handleComplete);
         });
     }
 

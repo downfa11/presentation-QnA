@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -175,6 +173,87 @@ public class SlidoService {
         }
 
     }
+
+    @Transactional
+    public void completeComment(String roomId, String commentId) throws JsonProcessingException {
+        String userId = jwtProvider.getMembershipIdbyToken();
+        String roomKey = findCurrentRoom(roomId);
+
+        if (roomKey == null || userId.equals("")) {
+            System.out.println("roomKey or userId is incorrect.");
+            return;
+        }
+
+        String commentKeyPattern = String.format(COMMENTS_KEY_PATTERN, roomKey, commentId, "*");
+        Set<String> keys = redisTemplate.keys(commentKeyPattern);
+
+        if (keys == null || keys.isEmpty()) {
+            System.out.println("Comment not found for roomId: " + roomId+", commentId: "+commentId);
+            return;
+        }
+
+        for (String key : keys) {
+            String storedUserId = getUserIdFromCommentKey(key);
+            if (userId.equals(storedUserId) || userId.equals(roomId)) {
+
+                backupCommentData(roomKey, commentId, key);
+                String likesKey = String.format(LIKES_KEY_PATTERN, roomKey, commentId);
+
+                if (redisTemplate.hasKey(likesKey)) {
+                    redisTemplate.delete(likesKey);
+                    System.out.println(likesKey + " has been deleted.");
+                }
+
+                redisTemplate.delete(key);
+                System.out.println("Comment deleted with key: " + key);
+                return;
+            }
+            else System.out.println("Not Authication JWT token.");
+        }
+
+    }
+
+    private void backupCommentData(String roomKey, String commentId, String commentKey) throws JsonProcessingException {
+
+        // 백업 데이터를 저장할 맵을 생성합니다.
+        Map<String, Object> backupData = new HashMap<>();
+
+        // 코멘트 데이터를 가져옵니다.
+        String commentData = redisTemplate.opsForValue().get(commentKey);
+        backupData.put(commentKey, commentData);
+
+        // 코멘트에 대한 좋아요 데이터 패턴을 생성합니다.
+        String likesKeyPattern = String.format(LIKES_KEY_PATTERN, roomKey, commentId);
+        // 좋아요 데이터를 검색합니다.
+        Set<String> likeKeys = redisTemplate.keys(likesKeyPattern);
+
+        if (likeKeys != null) {
+            for (String likeKey : likeKeys) {
+                String likeData = redisTemplate.opsForValue().get(likeKey);
+                backupData.put(likeKey, likeData);
+            }
+        }
+
+        String backupJson = objectMapper.writeValueAsString(backupData);
+
+        // 백업 데이터를 Redis에 누적하여 저장합니다.
+        String backupKey = String.format("backup:%s", roomKey);
+
+        String existingBackupJson = redisTemplate.opsForValue().get(backupKey);
+        if (existingBackupJson != null) {
+            Map<String, Object> existingBackupData = objectMapper.readValue(existingBackupJson, HashMap.class);
+            existingBackupData.putAll(backupData);
+            backupJson = objectMapper.writeValueAsString(existingBackupData);
+        }
+
+        // 누적된 백업 데이터를 Redis에 저장합니다.
+        redisTemplate.opsForValue().set(backupKey, backupJson);
+
+        // 백업된 데이터를 출력합니다.
+        System.out.println("백업 데이터 key : " + backupKey);
+        System.out.println("백업 데이터 value : " + backupJson);
+    }
+
 
     private String getUserIdFromCommentKey(String commentKey) {
         String[] parts = commentKey.split(":");

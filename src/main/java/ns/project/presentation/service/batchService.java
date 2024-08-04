@@ -28,38 +28,6 @@ public class batchService {
     @Value("${redis.expiredtime.comment:60}")
     Long defaultTime;
 
-    public String findCurrentRoom(String roomId) {
-        Set<String> keys = redisTemplate.keys(String.format("room:%s:timestamp:*", roomId));
-        if (keys == null || keys.isEmpty()) {
-            System.out.println("Room not found for roomId: " + roomId);
-            return null;
-        }
-
-        String latestKey = null;
-        long latestTimestamp = 0;
-
-        for (String key : keys) {
-            String[] parts = key.split(":");
-            if (parts.length != 4) {
-                continue;
-            }
-
-            try {
-                String timestampStr = parts[3];
-                long timestamp = Long.parseLong(timestampStr);
-
-                if (timestamp > latestTimestamp) {
-                    latestTimestamp = timestamp;
-                    latestKey = key;
-                }
-            } catch (NumberFormatException e) {
-                System.err.println("Error parsing timestamp for key: " + key);
-            }
-        }
-
-        return latestKey;
-    }
-
     @Scheduled(fixedRateString = "${batch.fixedRate:3000}") // 3sec. 60000=1min
     public void processAllRoomComments() {
         Set<String> roomKeys = redisTemplate.keys("room:*:timestamp:*");

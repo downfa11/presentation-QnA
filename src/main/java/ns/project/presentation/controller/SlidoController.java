@@ -1,5 +1,6 @@
 package ns.project.presentation.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.zxing.WriterException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -83,6 +84,13 @@ public class SlidoController {
     public ResponseEntity<Void> deleteComment(@PathVariable String roomId,
                                               @PathVariable String commentId) {
         slidoService.deleteComment(roomId, commentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/rooms/{roomId}/comments/{commentId}/complete")
+    public ResponseEntity<Void> completeComment(@PathVariable String roomId,
+                                              @PathVariable String commentId) throws JsonProcessingException {
+        slidoService.completeComment(roomId, commentId);
         return ResponseEntity.ok().build();
     }
 
