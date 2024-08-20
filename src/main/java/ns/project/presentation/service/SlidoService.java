@@ -33,6 +33,7 @@ public class SlidoService {
     @Value("${redis.expiredtime.room:60}")
     Long defaultTime;
 
+    private final String regex = "(?i)(javascript\\s*:\\s*|onload\\s*=|onerror\\s*=|onclick\\s*=|<script\\s*.*?>|<img\\s*.*?>|<a\\s*.*?>)";
 
 
     public void createRoom() {
@@ -86,6 +87,12 @@ public class SlidoService {
             return;
         }
 
+        String sanitizedContents = contents.replaceAll("\\s+", " ").trim();
+        if (sanitizedContents.matches(".*" + regex + ".*")) {
+            logXSSAttempt(userId, username, contents, roomId);
+            throw new IllegalArgumentException("Contents contain forbidden text.");
+        }
+
         String commentIdKey = String.format(COMMENT_ID_KEY_PATTERN, roomId);
         Long commentId = redisTemplate.opsForValue().increment(commentIdKey);
 
@@ -110,6 +117,12 @@ public class SlidoService {
         if (roomKey == null || userId.equals("")) {
             System.out.println("roomKey or userId is incorrect.");
             return;
+        }
+
+        String sanitizedContents = contents.replaceAll("\\s+", " ").trim();
+        if (sanitizedContents.matches(".*" + regex + ".*")) {
+            logXSSAttempt(userId, username, contents, roomId);
+            throw new IllegalArgumentException("Contents contain forbidden text.");
         }
 
         String commentKeyPattern = String.format(COMMENTS_KEY_PATTERN, roomKey, commentId, "*");
@@ -137,6 +150,19 @@ public class SlidoService {
             }
             else System.out.println("User is not authorized to modify this comment id:"+userId+", roomId:"+roomId);
         }
+    }
+
+    private void logXSSAttempt(String userId, String username, String contents, String roomId) {
+        LocalDateTime current = LocalDateTime.now();
+        String timestamp = current.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        String xssLogKey = "xss_attempts";
+        String logEntry = String.format("userId:%s, username:%s, contents:%s, roomId:%s, timestamp:%s",
+                userId, username, contents, roomId, timestamp);
+
+        redisTemplate.opsForList().leftPush(xssLogKey, logEntry);
+
+        System.out.println("XSS attempt logged: " + logEntry);
     }
 
     @Transactional
@@ -214,17 +240,12 @@ public class SlidoService {
     }
 
     private void backupCommentData(String roomKey, String commentId, String commentKey) throws JsonProcessingException {
-
-        // 백업 데이터를 저장할 맵을 생성합니다.
         Map<String, Object> backupData = new HashMap<>();
 
-        // 코멘트 데이터를 가져옵니다.
         String commentData = redisTemplate.opsForValue().get(commentKey);
         backupData.put(commentKey, commentData);
 
-        // 코멘트에 대한 좋아요 데이터 패턴을 생성합니다.
         String likesKeyPattern = String.format(LIKES_KEY_PATTERN, roomKey, commentId);
-        // 좋아요 데이터를 검색합니다.
         Set<String> likeKeys = redisTemplate.keys(likesKeyPattern);
 
         if (likeKeys != null) {
@@ -236,7 +257,6 @@ public class SlidoService {
 
         String backupJson = objectMapper.writeValueAsString(backupData);
 
-        // 백업 데이터를 Redis에 누적하여 저장합니다.
         String backupKey = String.format("backup:%s", roomKey);
 
         String existingBackupJson = redisTemplate.opsForValue().get(backupKey);
@@ -246,10 +266,8 @@ public class SlidoService {
             backupJson = objectMapper.writeValueAsString(existingBackupData);
         }
 
-        // 누적된 백업 데이터를 Redis에 저장합니다.
         redisTemplate.opsForValue().set(backupKey, backupJson);
 
-        // 백업된 데이터를 출력합니다.
         System.out.println("백업 데이터 key : " + backupKey);
         System.out.println("백업 데이터 value : " + backupJson);
     }
